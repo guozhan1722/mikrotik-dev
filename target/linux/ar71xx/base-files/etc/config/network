@@ -1,0 +1,33 @@
+config 'interface' 'loopback'
+    option 'ifname' 'lo'
+    option 'proto' 'static'
+    option 'ipaddr' '127.0.0.1'
+    option 'netmask' '255.0.0.0'
+
+config 'interface' 'lan'
+    option 'ifname' 'eth0 bat0'
+    option 'type' 'bridge'
+    option 'proto' 'static'
+    option 'ipaddr' '169.254.2.11'
+    option 'gateway' '169.254.5.200'
+        option 'dns' '169.254.5.200'
+    option 'netmask' '255.255.0.0'
+    option 'mtu' '1528'
+
+config interface dhcp0
+        option ifname eth0
+        option proto dhcp
+
+# VLAN200 example
+#config 'interface' 'wan'
+#        option 'ifname' 'eth0.200 bat0.200'
+#        option 'type' 'bridge'
+#        option 'proto' 'static'
+#        option 'ipaddr' '169.200.2.11'
+#        option 'netmask' '255.255.0.0'
+
+config 'interface' 'mesh'
+    option 'ifname' 'adhoc0'
+    option 'proto' 'batadv'
+    option 'mtu' '1532'
+    option 'mesh' 'bat0'

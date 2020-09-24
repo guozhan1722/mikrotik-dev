@@ -1,0 +1,4 @@
+config 'mesh' 'bat0'
+	option 'gw_mode' 'server'
+	option 'bl' '1'
+

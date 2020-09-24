@@ -1,0 +1,7 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+sleep 5
+iw adhoc0 set bitrates legacy-5 12
+#ifconfig ath0 mtu 1528
+echo bat0 > /sys/class/net/adhoc0/batman_adv/mesh_iface
+exit 0

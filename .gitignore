@@ -1,0 +1,12 @@
+.config
+.config.old
+bin/
+build_dir/
+dl/
+feeds/
+key-build
+key-build.pub
+scripts/
+staging_dir/
+tmp/
+upgrade-rb411/openwrt-ar71xx-mikrotik-vmlinux-initramfs-lzma.elf
