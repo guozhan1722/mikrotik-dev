@@ -1,0 +1,10 @@
+# To use this, you need a web server on the laptop you're using, and you need the IP address of the laptop to be 169.254.0.250.
+# you run ./upgrade filename.
+#
+cd /tmp
+wget http://169.254.0.250/$1
+umount -l /dev/sda2
+umount -l /dev/sda1
+umount -l /dev/sda
+gunzip -c $1 | dd of=/dev/sda bs=512
+reboot

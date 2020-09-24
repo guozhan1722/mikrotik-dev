@@ -1,0 +1,3 @@
+#!/bin/ash
+
+cp /opt/teletics/testfiles/* /var/spool/asterisk/outgoing/

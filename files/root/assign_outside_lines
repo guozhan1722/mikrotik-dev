@@ -1,0 +1,29 @@
+# This script sets up the dialplan so that the ports entered in the comma delimited FXO_Port_Assignments
+# file as 11,12,13,14 (for example) are set up for either the old style one port Feature Server, or the
+# new style unit.  The port numbers can be any wintercom station on the system from 11 to 30.  However,
+# there MUST be 4 in the file, and no testing is done to ensure that they are a valid range.
+
+mac_test=$(ifconfig | grep 00:00)
+if [  ${#mac_test} = 0 ];then
+	logger -s "Setting up configuration for a 1 port Feature Server"
+	Line4=$(cut -c1-2 /etc/config/FXO_Port_Assignments)                                                                    
+	Line3=$(cut -c4-5 /etc/config/FXO_Port_Assignments)                                                                    
+	Line2=$(cut -c7-8 /etc/config/FXO_Port_Assignments)                                                                    
+	Line1=$(cut -c10-11 /etc/config/FXO_Port_Assignments)
+else
+	logger -s "Setting up configuration for a 4 port Feature Server"
+	Line1=$(cut -c1-2 /etc/config/FXO_Port_Assignments)                                                                    
+	Line2=$(cut -c4-5 /etc/config/FXO_Port_Assignments)                                                                    
+	Line3=$(cut -c7-8 /etc/config/FXO_Port_Assignments)                                                                    
+	Line4=$(cut -c10-11 /etc/config/FXO_Port_Assignments)
+fi
+#sed -e 's/+++FXO1/SIP\/'$Line1'/g' /etc/asterisk/extensions.conf.standard > /etc/asterisk/extensions.conf.1
+#sed -e 's/+++FXO2/SIP\/'$Line2'/g' /etc/asterisk/extensions.conf.1 > /etc/asterisk/extensions.conf.2
+#sed -e 's/+++FXO3/SIP\/'$Line3'/g' /etc/asterisk/extensions.conf.2 > /etc/asterisk/extensions.conf.3
+#sed -e 's/+++FXO4/SIP\/'$Line4'/g' /etc/asterisk/extensions.conf.3 > /etc/asterisk/extensions.conf
+rm /etc/asterisk/fxo_access.conf
+echo -e "[Tel$Line1]\ninclude => POTS_PORT_1_OUTGOING\n" >> /etc/asterisk/fxo_access.conf
+echo -e "[Tel$Line2]\ninclude => POTS_PORT_2_OUTGOING\n" >> /etc/asterisk/fxo_access.conf
+echo -e "[Tel$Line3]\ninclude => POTS_PORT_3_OUTGOING\n" >> /etc/asterisk/fxo_access.conf
+echo -e "[Tel$Line4]\ninclude => POTS_PORT_4_OUTGOING\n" >> /etc/asterisk/fxo_access.conf
+asterisk -rx "dialplan reload"

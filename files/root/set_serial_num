@@ -1,0 +1,7 @@
+echo "Please Enter this Feature Server's Serial Number:"
+read input_variable
+uci set system.@system[0].hostname="TFS"$input_variable
+uci commit system
+uci set network.lan2.hostname="TFS"$input_variable
+uci commit network
+hostname "TFS"$input_variable

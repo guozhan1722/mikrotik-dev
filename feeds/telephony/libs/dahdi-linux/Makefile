@@ -1,5 +1,5 @@
 # 
-# Copyright (C) 2014 OpenWrt.org
+# Copyright (C) 2014 - 2018 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -10,7 +10,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=dahdi-linux
 PKG_VERSION:=2.11.1-20180111
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 #PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 #PKG_SOURCE_URL:=https://downloads.asterisk.org/pub/telephony/dahdi-linux/releases
@@ -79,6 +79,15 @@ define KernelPackage/dahdi-dummy
   AUTOLOAD:=$(call AutoProbe,dahdi_dummy)
 endef
 
+define KernelPackage/dahdi-wctdm
+  SUBMENU:=Voice over IP
+  TITLE:=DAHDI wctdm driver 4port FXO
+  DEPENDS:=kmod-dahdi
+  URL:=http://www.asterisk.org/
+  FILES:= $(PKG_BUILD_DIR)/drivers/dahdi/wctdm.$(LINUX_KMOD_SUFFIX)
+  AUTOLOAD:=$(call AutoProbe,dahdi_wctdm)
+endef
+
 define KernelPackage/dahdi-dummy/description
   This package contains the dummy DAHDI driver providing only DAHDI timing
   without any real telephony hardware.
@@ -87,8 +96,6 @@ endef
 
 define Build/Configure
 endef
-
-TARGET_CFLAGS += $(FPIC)
 
 define Build/Prepare
 	$(Build/Prepare/Default)
@@ -101,15 +108,8 @@ define Build/Compile
 		ARCH="$(LINUX_KARCH)" \
 		$(TARGET_CONFIGURE_OPTS) \
 		CROSS_COMPILE="$(TARGET_CROSS)" \
-		KERNELVERSION="$(KERNEL)" \
-		KERNEL_VERSION="$(LINUX_VERSION)" \
-		KERNELDIR="$(LINUX_DIR)" \
-		KSRC:="$(LINUX_DIR)" \
-		KVERS:="$(LINUX_VERSION)" \
-		TOPDIR:="$(TOPDIR)" \
-		INCLUDE_DIR:="$(INCLUDE_DIR)" \
-		PWD:="$(PKG_BUILD_DIR)" \
-		MODULES_EXTRA:="$(DAHDI_MODULES_EXTRA)"
+		KSRC="$(LINUX_DIR)" \
+		MODULES_EXTRA="$(DAHDI_MODULES_EXTRA)"
 endef
 
 define Build/InstallDev
@@ -124,4 +124,5 @@ endef
 $(eval $(call KernelPackage,dahdi))
 $(eval $(call KernelPackage,dahdi-echocan-oslec))
 $(eval $(call KernelPackage,dahdi-dummy))
+$(eval $(call KernelPackage,dahdi-wctdm))
 $(eval $(call KernelPackage,dahdi-hfcs))

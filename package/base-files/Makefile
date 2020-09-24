@@ -123,8 +123,11 @@ endif
 
 ifeq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),y)
   define Package/base-files/ramfs-support
-	rm -rf ${1}/etc/rc.local
-	mv $(1)/etc/rc.local.ram $(1)/etc/rc.local
+	mv $(1)/etc/rc.local.factory $(1)/etc/rc.local
+  endef
+else
+  define Package/base-files/ramfs-support
+	rm $(1)/etc/rc.local.factory
   endef
 endif
 

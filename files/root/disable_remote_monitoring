@@ -1,0 +1,2 @@
+cp /etc/rc.local.local_syslog /etc/rc.local
+echo "you now need to reboot"

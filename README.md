@@ -11,3 +11,4 @@ Date:   Fri Feb 23 13:58:13 2018 +0100
     
     Signed-off-by: Felix Fietkau <nbd@nbd.name>
 
+Note: Release for Sales Demos Nov 2018

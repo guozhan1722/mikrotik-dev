@@ -1,0 +1,4 @@
+DEFAULT minimyth-ram
+LABEL minimyth-ram
+	KERNEL openwrt-x86-alix2-vmlinuz
+	APPEND ro root=/dev/ram0 ramdisk_size=192000 initrd=ram-minimyth2-0.27-6.14.2.gf4825ca/rootfs

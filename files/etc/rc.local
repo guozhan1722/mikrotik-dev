@@ -1,0 +1,26 @@
+cp /etc/FeatureServerMessenger.py /root/
+cp /etc/HT502.py /root/
+cp /etc/RB411.py /root/
+cp /etc/Logger.py /root/
+cp /etc/Network.py /root/
+cp /etc/netcheck /root
+
+if [ -f /etc/config/firstboot ];then
+  /root/factory_prompts &>/dev/ttyS0
+  /root/assign_outside_lines
+  chmod +x /root/PingAll.sh
+  chmod +x /root/netcheck
+  chmod +x /opt/teletics/*
+  chmod +x /opt/teletics/asterisk/*
+  rm /etc/config/firstboot
+fi
+/etc/updateiptables
+
+modprobe dahdi
+modprobe dahdi_echocan_oslec
+modprobe wctdm
+dahdi_cfg
+
+./root/netcheck &
+
+exit 0

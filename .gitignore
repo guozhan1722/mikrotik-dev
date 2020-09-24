@@ -1,12 +1,5 @@
-.confi
 .config
 .config.old
-bin/
-build_dir/
-config_new
-dl/
-key-build
-key-build.pub
 scripts/config/conf
 scripts/config/conf.o
 scripts/config/mconf
@@ -16,4 +9,3 @@ scripts/config/zconf.tab.c
 scripts/config/zconf.tab.o
 staging_dir/
 tmp/
-

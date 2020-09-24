@@ -1,0 +1,4 @@
+DEFAULT minimyth-ram
+LABEL minimyth-ram
+        KERNEL openwrt-x86-geode-ramfs.bzImage
+        APPEND init=/etc/preinit console=tty0 console=ttyS0,19200n8 reboot=bios

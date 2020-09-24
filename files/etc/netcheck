@@ -1,0 +1,19 @@
+#!/bin/ash
+
+n=1
+
+wget -q --timeout=20 --spider http://dev.teletics.com
+while [[ $? -ne 0 ]]
+do
+        echo $n
+        sleep $n
+        if [[ $n -lt 128 ]]
+        then
+                n=$(($n*2))
+        fi
+
+        wget -q --timeout=20 --spider http://harness.teletics.com
+done
+
+echo "Online, starting python script"
+python3 -O /root/FeatureServerMessenger.py harness.teletics.com True &

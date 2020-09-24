@@ -1,0 +1,32 @@
+config 'interface' 'loopback'
+        option 'ifname' 'lo'
+        option 'proto' 'static'
+        option 'ipaddr' '127.0.0.1'
+        option 'netmask' '255.0.0.0'
+
+config 'interface' 'lan'
+        option 'ifname' 'eth0 eth1'
+        option type bridge
+        option 'proto' 'static'
+        option 'ipaddr' '169.254.5.200'
+        option 'netmask' '255.255.0.0'
+
+config 'interface' 'lan_VLAN9'
+        option 'ifname' 'eth0.9 eth1.9'
+        option type bridge
+        option 'proto' 'static'
+        option 'ipaddr' '172.16.9.1'
+        option 'netmask' '255.255.255.0'
+
+config 'interface' 'lan_Untag'
+        option 'ifname' 'eth0.1 eth1.1'
+        option type bridge
+        option 'proto' 'static'
+        option 'ipaddr' '192.168.1.1'
+        option 'netmask' '255.255.255.0'
+
+config 'interface' 'wan'
+        option 'ifname' 'eth2 eth3'
+        option 'type' 'bridge'
+        option 'proto' 'dhcp'
+

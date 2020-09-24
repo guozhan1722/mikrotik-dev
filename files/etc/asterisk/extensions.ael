@@ -1,0 +1,290 @@
+globals {
+	// This is used with EVAL to create dynamic variables
+	ss=$;
+
+	// Where to direct incomming calls on the FXO ports
+	FXO1IN="SIP/11";
+	FXO2IN="SIP/12";
+	FXO3IN="SIP/13";
+	FXO4IN="SIP/14";
+	// Multi Ring Example
+	// FXO1IN="SIP/11&SIP/12";
+
+	// Which FXO ports to assign to outbound calling stations
+	// If the SIP station does not find an entry for itself in this list it will default to "congestion" (outside calling not permitted from that station)
+	SIP11OUT="DAHDI/g1";
+	SIP12OUT="DAHDI/g2";
+	SIP13OUT="DAHDI/g3";
+	SIP14OUT="DAHDI/g4";
+
+	// Example: First available line will be used
+	// SIP16OUT="DAHDI/g1&DAHDI/g2&DAHDI/g3&DAHDI/g4";
+
+	// Groups can be created by making a variable named SIP(EXTENSION)GROUP where EXTENSION is the pilot of the group
+	// and the contents of the string are used for dialling
+	SIP14GROUP="SIP/14&SIP/28&SIP/29&SIP/30";
+
+	// If set to 1, we will read out the number of stations connected when using *88 or *99
+	// If 0 stations are reachable the user will get "congestion"
+	SAYCOUNT=1;
+
+    // Enable/Disable the spying feature
+	SPYENABLED=1;
+};
+
+context dahdi-in {
+
+	s => {
+		// This calculates the destination device by looking up the appropriate global FXOxIN variable
+		destination=EVAL("${ss}{FXO${CHANNEL:6:1}IN}");
+		Dial(${destination});
+		Goto(${DIALSTATUS},1);
+	};
+
+	BUSY => {
+        	Answer();
+                Playtones(busy);
+		Wait(20);
+		Hangup();
+        };
+
+        CHANUNAVAIL => {
+                Answer();
+                Playback(ss-noservice);
+		Hangup();
+        };
+	
+};
+
+
+
+context dahdi-out {
+	
+	_. => {
+		// This calculates the destination by looking up the appropriate SIPxxOUT global variable
+		destination=EVAL("${ss}{SIP${CALLERID(num)}OUT}");
+
+		// If no outbound device is located we return Congestion, otherwise we find the first abvailable device in the list using ChanIsAvailable
+		if ( $[ ${LEN(${destination})} = 0 ] ){ 
+			Answer();
+			Playtones(congestion);
+			Wait(20);
+			Hangup();
+		} else {
+			
+			ChanIsAvail(${destination});
+
+			if ( $[ ${LEN(${AVAILCHAN})} != 0 ] ){
+				dest="DAHDI/${AVAILCHAN:6:1}-1";
+				Dial(${dest}/${EXTEN},,To);
+			} else {
+				Answer();
+                       		Playtones(congestion);
+                        	Wait(20);
+                        	Hangup();
+			}
+				
+		}
+	};
+
+};
+
+
+
+context pots {
+
+    // Used to spy on an in-progress call
+    // Dial **15 to spy on 15, if 15 is not on a call you get congestion
+    _**XX => {
+        if ( "x${SPYENABLED}x" == "x1x" ){
+            id="${EXTEN:2}";
+            state=${DEVICE_STATE(SIP/${id})};
+            if ( "${state}" == "INUSE" ){
+                ChanSpy(SIP/${id},q);
+            }
+            else {
+                Answer();
+                Congestion();
+            }
+        }
+        else {
+            Answer();
+            Congestion();
+        }
+
+    };
+
+	// when the user dials 9 we send all of the rest of the digits to the upstream provider
+	_9. => {
+		Goto(dahdi-out,${EXTEN:1},1);	
+	};
+
+    // Evacuation alarm, this calls *99 to set up a page all conference and then adds a user that plays a
+    // sound file into the conference.
+    *77 => {
+		list="";
+		for (x=110; ${x} < 301; x=${x} + 10) {
+			ChanIsAvail(SIP/${x});
+			if ( $[ ${LEN(${AVAILCHAN})} != 0 ] ){
+				list="${list} SIP/${x}";
+        	       	}
+		};
+        list="${list} LOCAL/0002@features";
+		list="${list:1}";
+		&panew("${list}", 1);
+        Hangup();
+        };
+
+    // Sets up a conference with all paging devices.
+	*99 => {
+		list="";
+		for (x=110; ${x} < 301; x=${x} + 10) {
+			ChanIsAvail(SIP/${x});
+			if ( $[ ${LEN(${AVAILCHAN})} != 0 ] ){
+				list="${list} SIP/${x}";
+        	       	}
+		};
+		list="${list:1}";
+		&panew("${list}", 1);
+        	Hangup();
+	
+	};
+
+    // sets up a conference with all paging devices except the originator.
+	*88 => {
+		list="";
+		for (x=110; ${x} < 301; x=${x} + 10) {
+                	ChanIsAvail(SIP/${x});
+			if ( $[ ${LEN(${AVAILCHAN})} != 0 ] ){
+				if ( "${CALLERID(num)}" != "${x:0:2}" ){  // this is where we remove ourselves
+                			list="${list} SIP/${x}";
+				}
+        		}
+		};
+		list="${list:1}";
+		&panew("${list}", 1);
+		Hangup();
+	};
+
+    // Ad-hoc conferences *50 - *52
+    _*5[012] => {
+        ConfBridge(${EXTEN:1},silent_bridge,normal_user);
+        Hangup();
+    };
+
+	88 => {
+        Dial(SIP/11&SIP/12&SIP/13&SIP/14&SIP/15&SIP/16&SIP/17&SIP/18&SIP/19&SIP/20&SIP/21&SIP/22&SIP/23&SIP/24&SIP/25&SIP/26&SIP/27&SIP/28&SIP/29,30);
+		Hangup();
+	};
+
+	// This rewrites the dialed number from the 3 digit plan to the 2 digit plan
+	_1XX => {
+	  	EX=${EXTEN:1}+10;
+		Goto(${EX},1);
+	};
+	
+	// This handles 2 digit dialling
+	_XX => {
+	    OrigExten=${EXTEN};
+        destination=EVAL("${ss}{SIP${EXTEN}GROUP}");
+
+        if ("x${destination}x" == "xx"){
+    		Dial(SIP/${EXTEN});
+        }
+        else {
+            Dial(${destination});
+        }
+
+		Goto(${DIALSTATUS},1);
+		};
+
+	// This rewrites the dialed number from the *3 digit plan to the *2 digit plan
+	_*1XX => {
+		EX=${EXTEN:2}+10;
+        Goto(*${EX},1);
+	};
+
+	_*XX => {
+		list="";
+		ChanIsAvail(SIP/${EXTEN:1}0);
+		if ( $[ ${LEN(${AVAILCHAN})} != 0 ] ){
+			list="SIP/${EXTEN:1}0";
+		}
+		&panew("${list}", 0);
+		Hangup();
+	};
+
+	BUSY => {
+		Answer();
+		Playtones(busy);
+		Read(BUSYDIGITS,,2,,,20);
+
+        if ("${BUSYDIGITS}" == "**") {
+            ChanSpy(SIP/${id},qB);
+        }
+
+		Hangup();
+	};
+
+	CHANUNAVAIL => { 
+		Answer();
+		Playback(ss-noservice);
+		Hangup();
+	};
+
+	h => {
+		System(python3 /opt/teletics/killconference.py 99${CALLERID(num)});
+	};
+
+};
+
+// helpers for some of the features
+context features {
+    0002 => {
+        Answer();
+        start:
+        Playback(siren);
+        Goto(start);
+    };
+};
+
+
+// The PA macro, It builds a conference with a dash separated list in (devices) of devices to add
+// Tracks the number of devices added to the conference and announces this number
+// on entry etc.
+macro panew( devices, announce ) {
+
+	confid=99${CALLERID(num)};
+
+	System(/opt/teletics/buildconference.sh ${confid} ${devices});
+	Wait(0.3);
+
+	i=${CONFBRIDGE_INFO(parties,${confid})};
+
+       	if ($[ ${i} = 0 ] ){
+		Answer();
+              	Playtones(congestion);
+              	Wait(20);
+    	} else {
+
+       		Answer();
+            	Wait(0.2);
+           	if ( ${SAYCOUNT} ){
+             		if ( ${announce} ){
+              			SayNumber(${i},f);
+      			}
+        	}
+       		Playback(beep);
+            ConfBridge(99${CALLERID(num)},silent_bridge,talking_user);
+            Hangup();
+  	}
+
+    	return;
+
+        catch h {
+                System(python3 /opt/teletics/killconference.py 99${CALLERID(num)});
+        	return;
+	}
+
+};
+
