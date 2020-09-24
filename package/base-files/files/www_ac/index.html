@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>Configuration</title>
+<meta http-equiv='Content-Type' content='text/html;CHARSET=utf-8' />
+<link rel="stylesheet" href="/common.css" type="text/css" />
+<script language="javascript" type="text/javascript" src="/common.js"></script>
+</head>
+<body>
+
+<div id="content">
+
+<fieldset id='login' style='display:block'>
+<div>
+	<label class="leftcolumn" for='username' id='password1_label'>User Name:</label>
+	<input class="rightcolumn" type='text' id='username' size='30' maxlength='30'  />
+	<label class="leftcolumn" for='password' id='password2_label'>Password:</label>
+	<input class="rightcolumn" type='password' id='password' size='30' maxlength='30'  />
+	<p> </p>
+	<div class='center'>
+		<input type='button' value='Login' id="login_button" class="button" onclick='login();' />
+	</div>
+</div>
+</fieldset>
+
+<fieldset id='configuration' style='display:none'>
+<legend>Configuration</legend>
+<div>
+	<label class="leftcolumn" for='groupid' id='groupid_label'>GroupID:</label>
+	<input class="rightcolumn" type='text' id='groupid' size='30' maxlength='35' onkeyup='proofreadInput(this);' />
+</div>
+
+<div>
+	<label class="leftcolumn" id='channel_label'>Channel:</label>
+	<div class="rightcolumn">
+		<input type='radio' id='channel153' value='channel153' onclick='setChannel(this);' />153&nbsp;
+		<input type='radio' id='channel161' value='channel161' onclick='setChannel(this);' />161
+	</div>
+</div>
+
+<div>
+	<label class="leftcolumn" for='adjpower' id='adjpower_label'>Power Output:</label>
+	<input class="rightcolumn" type='text' id='adjpower' size='5' maxlength='3' onkeyup='proofreadNumber(this);' /> dBm
+</div>
+
+<hr />
+
+<div>
+	<label class="leftcolumn" for='password1' id='password1_label'>New Password:</label>
+	<input class="rightcolumn" type='text' id='password1' size='30' maxlength='35'  />
+	<label class="leftcolumn" for='password2' id='password2_label'>Confirm New Password:</label>
+	<input class="rightcolumn" type='text' id='password2' size='30' maxlength='35'  />
+</div>
+
+<div class="center">
+	<p> </p>
+	<input type='button' value='Save & Reboot' id="save_button" class="button" onclick='savedata()' />
+</div>
+</fieldset>
+
+<p> </p>
+
+<fieldset id='signal' style='display:none'>
+<legend>Signal level</legend>
+
+<div id='divrssi' class="center">
+	<img id='rssi' src='/rssi.jpg'>
+</div>
+
+<div class="center">
+	<input type='button' value='Start' id="start_stop_button" class="button" onclick='startGraph()' />
+</div>
+
+<div id='logo' class="logo" >
+	<img src="/logo_small.jpg">
+</div>
+</fieldset>
+
+</div>
+
+<script>
+	showdata();
+</script>
+
+</body>
+</html>

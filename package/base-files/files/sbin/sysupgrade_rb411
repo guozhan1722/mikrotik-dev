@@ -1,0 +1,103 @@
+#!/bin/sh
+
+. /lib/functions.sh
+. /lib/functions/system.sh
+
+# initialize defaults
+export MTD_CONFIG_ARGS=""
+export INTERACTIVE=0
+export VERBOSE=1
+export SAVE_CONFIG=1
+export SAVE_OVERLAY=0
+export SAVE_PARTITIONS=1
+export CONF_IMAGE=
+export CONF_BACKUP_LIST=0
+export CONF_BACKUP=
+export CONF_RESTORE=
+export NEED_IMAGE=
+export HELP=0
+export FORCE=0
+export TEST=0
+
+# parse options
+while [ -n "$1" ]; do
+	case "$1" in
+		-i) export INTERACTIVE=1;;
+		-v) export VERBOSE="$(($VERBOSE + 1))";;
+		-q) export VERBOSE="$(($VERBOSE - 1))";;
+		-n) export SAVE_CONFIG=0;;
+		-c) export SAVE_OVERLAY=1;;
+		-p) export SAVE_PARTITIONS=0;;
+		-b|--create-backup) export CONF_BACKUP="$2" NEED_IMAGE=1; shift;;
+		-r|--restore-backup) export CONF_RESTORE="$2" NEED_IMAGE=1; shift;;
+		-l|--list-backup) export CONF_BACKUP_LIST=1; break;;
+		-f) export CONF_IMAGE="$2"; shift;;
+		-F|--force) export FORCE=1;;
+		-T|--test) export TEST=1;;
+		-h|--help) export HELP=1; break;;
+		-*)
+			echo "Invalid option: $1"
+			exit 1
+		;;
+		*) break;;
+	esac
+	shift;
+done
+
+export CONFFILES=/tmp/sysupgrade.conffiles
+export CONF_TAR=/tmp/sysupgrade.tgz
+
+IMAGE="$1"
+
+[ -z "$IMAGE" -a -z "$NEED_IMAGE" -o $HELP -gt 0 ] && {
+	cat <<EOF
+Usage: $0 [<upgrade-option>...] <image file or URL>
+       $0 [-q] [-i] <backup-command> <file>
+
+upgrade-option:
+	-f <config>  restore configuration from .tar.gz (file or url)
+	-i           interactive mode
+	-c           attempt to preserve all changed files in /etc/
+	-n           do not save configuration over reflash
+	-p           do not attempt to restore the partition table after flash.
+	-T | --test
+	             Verify image and config .tar.gz but do not actually flash.
+	-F | --force
+	             Flash image even if image checks fail, this is dangerous!
+	-q           less verbose
+	-v           more verbose
+	-h | --help  display this help
+
+backup-command:
+	-b | --create-backup <file>
+	             create .tar.gz of files specified in sysupgrade.conf
+	             then exit. Does not flash an image. If file is '-',
+	             i.e. stdout, verbosity is set to 0 (i.e. quiet).
+	-r | --restore-backup <file>
+	             restore a .tar.gz created with sysupgrade -b
+	             then exit. Does not flash an image. If file is '-',
+	             the archive is read from stdin.
+	-l | --list-backup
+	             list the files that would be backed up when calling
+	             sysupgrade -b. Does not create a backup file.
+
+EOF
+	exit 1
+}
+
+include /lib/upgrade
+
+rb411_upgrade_ubifs() {
+	local rootfs_length=`(cat $1 | wc -c) 2> /dev/null`
+
+	nand_upgrade_prepare_ubi "$rootfs_length" "ubifs" "0" "0"
+
+	local ubidev="$( nand_find_ubi ubi )"
+	local root_ubivol="$(nand_find_volume $ubidev rootfs)"
+	ubiupdatevol /dev/$root_ubivol -s $rootfs_length $1
+
+}
+
+rb411_upgrade_ubifs $IMAGE
+echo "rb411 upgrade done with $IMAGE" > /tmp/rb411upgradDone
+
