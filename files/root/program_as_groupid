@@ -1,9 +1,0 @@
-# script for programming groupid                                                
-                                                                                
-if [ 1 -eq $# ]                                                                 
-  then                                                                          
-    uci set wireless.@wifi-iface[0].ssid=$1                                     
-    uci commit wireless                                                         
-  else                                                                          
-    echo "Please enter a value for GroupID"                                     
-fi

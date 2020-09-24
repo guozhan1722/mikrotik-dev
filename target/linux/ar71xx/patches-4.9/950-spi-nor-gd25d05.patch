@@ -1,0 +1,14 @@
+--- b/drivers/mtd/spi-nor/spi-nor.c	2020-03-20 18:21:57.062911915 -0600
++++ a/drivers/mtd/spi-nor/spi-nor.c	2020-03-20 18:21:07.335503843 -0600
+@@ -972,6 +972,11 @@
+ 
+ 	/* GigaDevice */
+ 	{
++		"gd25d05", INFO(0xc84010, 0, 64 * 1024,  1,
++			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
++			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)
++	},
++	{
+ 		"gd25q16", INFO(0xc84015, 0, 64 * 1024,  32,
+ 			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_QUAD_READ |
+ 			SPI_NOR_HAS_LOCK | SPI_NOR_HAS_TB)

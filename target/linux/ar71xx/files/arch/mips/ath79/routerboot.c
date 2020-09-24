@@ -158,10 +158,10 @@ rb_get_board_name(void)
 	int err;
 
 	err = rb_find_hard_cfg_tag(RB_ID_BOARD_NAME, &tag, &tag_len);
-	if (err)
-		return NULL;
+	//if (err)
+		//return NULL;
 
-	return tag;
+	return "912UAG-5HPnD";	//return tag;
 }
 
 __init u32

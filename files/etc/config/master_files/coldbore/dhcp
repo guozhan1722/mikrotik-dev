@@ -1,0 +1,12 @@
+config dnsmasq
+	option authoritative	1
+	option leasefile	'/tmp/dhcp.leases'
+	option resolvfile	'/tmp/resolv.conf.auto'
+	option logdhcp '1'
+	option quietdhcp '0'
+
+config dhcp
+	option interface lan
+	option start 200
+	option limit 50
+	option leasetime 12h

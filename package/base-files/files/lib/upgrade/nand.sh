@@ -126,14 +126,13 @@ nand_upgrade_prepare_ubi() {
 
 	local ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 	if [ ! "$ubidev" ]; then
-		ubiformat /dev/mtd$mtdnum -y -v
 		ubiattach -m "$mtdnum"
 		sync
 		ubidev="$( nand_find_ubi "$CI_UBIPART" )"
 	fi
 
 	if [ ! "$ubidev" ]; then
-		#ubiformat /dev/mtd$mtdnum -y
+		ubiformat /dev/mtd$mtdnum -y
 		ubiattach -m "$mtdnum"
 		sync
 		ubidev="$( nand_find_ubi "$CI_UBIPART" )"
@@ -229,7 +228,6 @@ nand_upgrade_ubinized() {
 
 # Write the UBIFS image to UBI volume
 nand_upgrade_ubifs() {
-	echo "Upgrading ubifs rootfs ..."
 	local rootfs_length=`(cat $1 | wc -c) 2> /dev/null`
 
 	nand_upgrade_prepare_ubi "$rootfs_length" "ubifs" "0" "0"
@@ -253,34 +251,22 @@ nand_upgrade_tar() {
 
 	local rootfs_type="$(identify_tar "$tar_file" ${board_dir}/root)"
 
-	local has_kernel=0
+	local has_kernel=1
 	local has_env=0
 
-	case "$tar_file" in
-		/mnt/*)
-		tar xf $tar_file ${board_dir}/kernel -C /tmp/
-		umount /mnt
-		nand_upgrade_kernel /tmp/${board_dir}/kernel
-	
-		mount -t ubifs /dev/ubi0_0 /mnt
-		tar xf $tar_file ${board_dir}/root -C /tmp/
-		rm -rf $tar_file
-		cd /
-		umount /mnt
-		nand_upgrade_ubifs /tmp/${board_dir}/root
-		nand_do_upgrade_success
-		return 0
-		;;
-	esac
-
 	[ "$kernel_length" != 0 -a -n "$kernel_mtd" ] && {
-		tar xf $tar_file ${board_dir}/kernel -C /tmp/
-		nand_upgrade_kernel /tmp/${board_dir}/kernel
+		tar xf $tar_file ${board_dir}/kernel -O | mtd write - $CI_KERNPART
 	}
+	[ "$kernel_length" = 0 -o ! -z "$kernel_mtd" ] && has_kernel=0
 
 	nand_upgrade_prepare_ubi "$rootfs_length" "$rootfs_type" "$has_kernel" "$has_env"
 
 	local ubidev="$( nand_find_ubi "$CI_UBIPART" )"
+	[ "$has_kernel" = "1" ] && {
+		local kern_ubivol="$(nand_find_volume $ubidev $CI_KERNPART)"
+		tar xf $tar_file ${board_dir}/kernel -O | \
+			ubiupdatevol /dev/$kern_ubivol -s $kernel_length -
+	}
 
 	local root_ubivol="$(nand_find_volume $ubidev rootfs)"
 	tar xf $tar_file ${board_dir}/root -O | \
@@ -289,54 +275,29 @@ nand_upgrade_tar() {
 	nand_do_upgrade_success
 }
 
-nand_upgrade_kernel()
-{
-	echo "Upgrading kernel ..."
-	local mtdnum="$(find_mtd_index "$CI_KERNPART")"
-	local mtdblkdev="/dev/mtdblock${mtdnum}"
-
-	mtd erase $CI_KERNPART
-	mount "${mtdblkdev}" /mnt
-	mv $1 /mnt/kernel
-	chmod +x /mnt/kernel
-	umount /mnt
-}
-
-nand_upgrade_rootfs()
-{
-	local ubi_file="$1"
-	case "$ubi_file" in
-		/mnt/*)
-		mv $ubi_file /tmp/sysupgrade.img
-		cd /
-		umount /mnt
-		ubi_file=/tmp/sysupgrade.img
-		;;
-	esac
-	nand_upgrade_ubifs $ubi_file
-}
-
 # Recognize type of passed file and start the upgrade process
 nand_do_upgrade() {
-	case "$1" in
-		/mnt/*)
-		umount /mnt
-		mount -t ubifs /dev/ubi0_0 /mnt
-		;;
-	esac
+	if [ -n "$IS_PRE_UPGRADE" ]; then
+		# Previously, nand_do_upgrade was called from the platform_pre_upgrade
+		# hook; this piece of code handles scripts that haven't been
+		# updated. All scripts should gradually move to call nand_do_upgrade
+		# from platform_do_upgrade instead.
+		export do_upgrade="nand_do_upgrade '$1'"
+		return
+	fi
 
-	local magic=$( nand_get_magic_long $1 0 )
-	echo "Upgrading image: $1 and magic: $magic"
-	case "$magic" in 
-		"7f454c46")
-			nand_upgrade_kernel $1
-		 	;;
-		"31181006")
-			nand_upgrade_rootfs $1
-			;;
-		"73797375")
-			nand_upgrade_tar $1
-			;;
+	local file_type=$(identify $1)
+
+	if type 'platform_nand_pre_upgrade' >/dev/null 2>/dev/null; then
+		platform_nand_pre_upgrade "$1"
+	fi
+
+	[ ! "$(find_mtd_index "$CI_UBIPART")" ] && CI_UBIPART="rootfs"
+
+	case "$file_type" in
+		"ubi")		nand_upgrade_ubinized $1;;
+		"ubifs")	nand_upgrade_ubifs $1;;
+		*)		nand_upgrade_tar $1;;
 	esac
 }
 
@@ -366,4 +327,3 @@ nand_do_platform_check() {
 
 	return 0
 }
-

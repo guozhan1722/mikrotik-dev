@@ -276,30 +276,12 @@ ifdef CONFIG_TARGET_ROOTFS_TARGZ
   endef
 endif
 
-IMG_VER=$(CONFIG_VERSION_NUMBER)
-IMG_FWV=$(CONFIG_VERSION_FWVER)
-IMG_TIM=$(shell date +"%H%M%S-%Y-%m-%d")
-IMG_SUFFIX=$(IMG_VER).$(IMG_FWV)-$(IMG_TIM)
 ifdef CONFIG_TARGET_ROOTFS_UBIFS
   define Image/Build/ubifs
 	$(STAGING_DIR_HOST)/bin/mkfs.ubifs \
 		-x zlib -m 2048 -e 126976 -c 240 \
 		-d $(TARGET_DIR) \
-		-o $(BIN_DIR)/Teletics-RB411-upgrade-rootfs.bin
-  endef
-  define Image/Build/rb411-upgrade-image
-	#sh $(TOPDIR)/scripts/ubinize-image.sh \
-  #  --kernel $(BIN_DIR)/$(IMG_PREFIX)-vmlinux-lzma.elf \
-	#	$(BIN_DIR)/$(IMG_PREFIX)-rootfs.ubifs \
-	#	$(BIN_DIR)/$(IMG_PREFIX)-rb411-sysupgrade.bin \
-  #  -m 2048 -p 128KiB
-	cp $(BIN_DIR)/$(IMG_PREFIX)-vmlinux-lzma.elf \
-		$(BIN_DIR)/Teletics-RB411-upgrade-kernel.bin
-	sh $(TOPDIR)/scripts/sysupgrade-tar.sh \
-		--board routerboard \
-		--kernel $(BIN_DIR)/Teletics-RB411-upgrade-kernel.bin \
-		--rootfs $(BIN_DIR)/Teletics-RB411-upgrade-rootfs.bin \
-		$(BIN_DIR)/Teletics-RB411-sysupgrade-$(IMG_SUFFIX).bin
+		-o $(BIN_DIR)/$(IMG_PREFIX)-rootfs.ubifs
   endef
 endif
 
@@ -606,8 +588,7 @@ define BuildImage
 	$(call Image/BuildKernel)
 	$(if $(CONFIG_TARGET_ROOTFS_INITRAMFS),$(if $(IB),,$(call Image/BuildKernel/Initramfs)))
 	$(call Image/InstallKernel)
-	$(call Image/Build/rb411-upgrade-image)
-  
+
   $(foreach device,$(TARGET_DEVICES),$(call Device,$(device)))
   $(foreach device,$(LEGACY_DEVICES),$(call LegacyDevice,$(device)))
 

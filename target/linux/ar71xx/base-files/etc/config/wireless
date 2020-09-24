@@ -1,30 +1,43 @@
 config wifi-device 'radio0'
         option type 'mac80211'
-        option country 'US'
+        option channel '36'
         option hwmode '11a'
-        option path 'pci0000:00/0000:00:12.0'
-        option distance '1000'
-        option txpower '26'
-        option diversity '0'
-        option txantenna '1'
-        option rxantenna '1'
-        option channel '165'
+        option path 'platform/ar934x_wmac'
+        option htmode 'HT20'
 
 config wifi-iface 'wmesh'
         option device 'radio0'
-        option ifname 'adhoc0'
+        option ifname adhoc0
         option network 'mesh'
         option mode 'adhoc'
-        option encryption 'psk'
+        #option encryption 'psk+aes'
+        option encryption 'none'
         option key '3kzQausAM_MZcR1PxvhzGz8EGTe_'
         option ssid '1234-5678'
+	option hidden 1
 
-# Creates WiFi AP with ssid TestAP
-#config wifi-iface
-#        option device 'radio0'
-#        option network 'lan'
-#        option mode 'ap'
-#        option encryption 'psk+aes'
-#        option key '1234567890'
-#        option wds 1
-#        option ssid 'TestAP'
+config wifi-device 'radio1'   
+        option type 'mac80211'  
+        option channel '11'
+        option hwmode '11g'  
+        option path 'pci0000:00/0000:00:00.0'
+        option htmode 'HT20'
+
+config wifi-iface
+        option device 'radio1'
+        option network 'lan'
+        option mode 'ap'
+        option wds '1'
+        option encryption 'psk+aes'
+        option key 'camping1'
+	option ssid     'Campers_0'
+
+config wifi-iface
+        option device 'radio1'
+        option network 'owner'
+        option mode 'ap'
+        option wds '1'
+        option encryption 'psk+aes'
+        option key 'owner246'
+	option ssid     'SCC_0'
+	option isolate 1

@@ -311,7 +311,7 @@ static void __init rb711gr100_setup(void)
 				    ARRAY_SIZE(rb91x_mdio0_info));
 
 	ath79_init_mac(ath79_eth0_data.mac_addr, ath79_mac_base, 0);
-	ath79_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_RGMII;
+	ath79_eth0_data.phy_if_mode = PHY_INTERFACE_MODE_GMII;
 	ath79_eth0_data.phy_mask = BIT(0);
 	ath79_eth0_pll_data.pll_1000 = 0x02000000;
 

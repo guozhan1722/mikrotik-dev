@@ -20,7 +20,7 @@ PKG_CONFIG_DEPENDS += \
 	CONFIG_VERSION_MANUFACTURER_URL \
 	CONFIG_VERSION_PRODUCT \
 	CONFIG_VERSION_SUPPORT_URL \
-	CONFIG_VERSION_FWVER \
+	CONFIG_VERSION_HWREV \
 
 sanitize = $(call tolower,$(subst _,-,$(subst $(space),-,$(1))))
 
@@ -52,8 +52,8 @@ VERSION_SUPPORT_URL:=$(if $(VERSION_SUPPORT_URL),$(VERSION_SUPPORT_URL),http://f
 VERSION_PRODUCT:=$(call qstrip,$(CONFIG_VERSION_PRODUCT))
 VERSION_PRODUCT:=$(if $(VERSION_PRODUCT),$(VERSION_PRODUCT),Generic)
 
-VERSION_FWVER:=$(call qstrip,$(CONFIG_VERSION_FWVER))
-VERSION_FWVER:=$(if $(VERSION_FWVER),$(VERSION_FWVER),0)
+VERSION_HWREV:=$(call qstrip,$(CONFIG_VERSION_HWREV))
+VERSION_HWREV:=$(if $(VERSION_HWREV),$(VERSION_HWREV),v0)
 
 define taint2sym
 $(CONFIG_$(firstword $(subst :, ,$(subst +,,$(subst -,,$(1))))))
@@ -85,7 +85,6 @@ $(subst &,\&,$(subst $(comma),\$(comma),$(subst ','\'',$(subst \,\\,$(1)))))
 endef
 #'
 
-IMG_TIM:=$(shell date -d now)
 VERSION_SED_SCRIPT:=$(SED) 's,%U,$(call sed_escape,$(VERSION_REPO)),g' \
 	-e 's,%V,$(call sed_escape,$(VERSION_NUMBER)),g' \
 	-e 's,%v,\L$(call sed_escape,$(subst $(space),_,$(VERSION_NUMBER))),g' \
@@ -103,6 +102,5 @@ VERSION_SED_SCRIPT:=$(SED) 's,%U,$(call sed_escape,$(VERSION_REPO)),g' \
 	-e 's,%b,$(call sed_escape,$(VERSION_BUG_URL)),g' \
 	-e 's,%s,$(call sed_escape,$(VERSION_SUPPORT_URL)),g' \
 	-e 's,%P,$(call sed_escape,$(VERSION_PRODUCT)),g' \
-	-e 's,%Y,$(call sed_escape,$(IMG_TIM)),g' \
-	-e 's,%h,$(call sed_escape,$(VERSION_FWVER)),g'
+	-e 's,%h,$(call sed_escape,$(VERSION_HWREV)),g'
 

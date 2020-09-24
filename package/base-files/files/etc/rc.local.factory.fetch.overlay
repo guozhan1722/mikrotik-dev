@@ -1,0 +1,5 @@
+cd /tmp
+/bin/wget http://169.254.4.200/factory_overlay.tar.gz
+tar -xzvf factory_overlay.tar.gz -C /
+cp /etc/rc.local.field /etc/rc.local
+

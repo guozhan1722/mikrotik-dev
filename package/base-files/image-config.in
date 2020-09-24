@@ -235,7 +235,7 @@ if VERSIONOPT
 			This is the product name embedded in /etc/device_info
 			Useful for OEMs building OpenWrt based firmware
 
-	config VERSION_FWVER
+	config VERSION_HWREV
 		string
 		prompt "Hardware revision"
 		help
