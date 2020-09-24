@@ -1,0 +1,9 @@
+# script for programming channel
+
+if [ 149 -le $1 ] && [ 165 -ge $1 ] && [ 1 -eq $# ]
+  then
+    uci set wireless.@wifi-device[0].channel=$1
+    uci commit wireless
+  else
+    echo "Please enter a value from 149 to 165"
+fi

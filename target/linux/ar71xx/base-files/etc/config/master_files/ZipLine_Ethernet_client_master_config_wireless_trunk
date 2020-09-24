@@ -1,0 +1,23 @@
+config wifi-device 'radio0'
+        option type 'mac80211'
+        option country 'US'
+        option channel '153'
+        option path 'pci0000:01/0000:01:00.0'
+        option distance '5000'
+        option hwmode '11a'
+        option htmode 'HT40+'
+        list ht_capab 'SHORT-GI-40'
+        list ht_capab 'TX-STBC'
+        list ht_capab 'RX-STBC1'
+        list ht_capab 'DSSS_CCK-40'
+
+config wifi-iface 'wmesh'
+        option device 'radio0'
+	option ifname 'adhoc0'
+        option network 'mesh'
+        option mode 'sta'
+        option encryption 'psk+aes'
+        option key 'TVop36wixOKwaJJVtxJxAFUwzZhANCXt6cSRi3JMSEAJ8PA34DZ5slBXT2YH2YY'
+	option ssid     Teletics_ZipLine_Ethernet_Extr
+
+
