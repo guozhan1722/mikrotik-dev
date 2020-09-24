@@ -1,0 +1,12 @@
+# Put your custom commands here that should be executed once
+# the system init finished.  By default this file does nothing.
+
+sleep 15
+cd /tmp
+/bin/wget http://169.254.4.200/openwrt-ar71xx-mikrotik-nand-large-ac-squashfs-sysupgrade.bin
+/sbin/sysupgrade openwrt-ar71xx-mikrotik-nand-large-ac-squashfs-sysupgrade.bin
+sleep 2
+reboot
+
+exit 0
+

@@ -1,5 +1,0 @@
-
-config 'mesh' 'bat0'
-	option 'gw_mode' 'client'
-	option 'bl' '1'
-

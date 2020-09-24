@@ -1,0 +1,8 @@
+# This script does the following
+# 1. Copy master files for /etc/config/network and /etc/config/wireless from the /etc/config/master_files directory.  This will overwrite the
+#    defaults put there by OpenWrt, or old ones from a previous operating configuration.
+# 2. Make the correct settings to the /etc/config/wireless and /etc/config/network files to set the radio up as either an AP or client, and
+#    set the correct IP address.
+cp /etc/config/master_files/client_master_config_network /etc/config/network
+cp /etc/config/master_files/ZipLine_Ethernet_client_master_config_wireless /etc/config/wireless
+uci commit wireless

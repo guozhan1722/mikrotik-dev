@@ -123,9 +123,27 @@ endif
 
 ifeq ($(CONFIG_TARGET_ROOTFS_INITRAMFS),y)
   define Package/base-files/ramfs-support
-	rm -rf ${1}/etc/rc.local
-	mv $(1)/etc/rc.local.ram $(1)/etc/rc.local
+	mv $(1)/etc/rc.local.factory  $(1)/etc/rc.local
   endef
+else
+ifeq ($(CONFIG_TARGET_ar71xx_mikrotik_DEVICE_nand-large-ac),y)
+  define Package/base-files/ramfs-support
+	rm -rf $(1)/www
+	mv $(1)/www_ac $(1)/www
+	rm -rf $(1)/etc/rc.local.factory
+  endef
+else
+ifeq ($(CONFIG_TARGET_ar71xx_mikrotik_DEVICE_rb-nor-flash-16M),y)
+  define Package/base-files/ramfs-support
+	rm -rf $(1)/etc/rc.local.factory
+  endef
+else
+  define Package/base-files/ramfs-support
+	rm -rf $(1)/www_ac
+	rm -rf $(1)/etc/rc.local.factory
+  endef
+endif
+endif
 endif
 
 define Package/base-files/install
